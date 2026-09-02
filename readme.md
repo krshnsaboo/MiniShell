@@ -1,11 +1,4 @@
-
-# Advanced Operating Systems — Assignment 2
-
-## POSIX Shell Implementation
-
-**Roll Number:** 2026201025  
-**Course:** CS3.304 — Advanced Operating Systems  
-**Assignment:** 2
+# POSIX Shell Implementation
 
 This project implements a modular Unix-like command-line shell in C++ using Linux/POSIX system calls and APIs.
 
@@ -205,7 +198,7 @@ echo
 ## Project Structure
 
 ```text
-2026201025_Assignment2/
+MiniShell/
 │
 ├── main.cpp
 ├── shell.h
