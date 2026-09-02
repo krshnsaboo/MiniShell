@@ -1,0 +1,4 @@
+shell
+*.o
+.shell_history
+.vscode/
