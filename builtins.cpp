@@ -1,5 +1,4 @@
 #include "shell.h"
-
 #include <iostream>
 #include <pwd.h>
 #include <sys/stat.h>
@@ -10,6 +9,26 @@
 #include <cstdio>
 #include <cstring>
 #include <unistd.h>
+
+static bool expandHomePath(const char* input,
+                          const char* homeDirectory,
+                          char* output,
+                          size_t outputSize)
+{
+    if (strcmp(input, "~") == 0)
+    {
+        snprintf(output, outputSize, "%s", homeDirectory);
+        return true;
+    }
+
+    if (strncmp(input, "~/", 2) == 0)
+    {
+        snprintf(output, outputSize, "%s/%s", homeDirectory, input + 2);
+        return true;
+    }
+
+    return false;
+}
 
 void executeCd(char* args[], int argc, const char* homeDirectory)
 {
@@ -60,9 +79,15 @@ void executeCd(char* args[], int argc, const char* homeDirectory)
         return;
     }
 
+    char targetPath[PATH_MAX];
+    const char* target = args[1];
+
+    if (expandHomePath(args[1], homeDirectory, targetPath, sizeof(targetPath)))
+        target = targetPath;
+
     strcpy(previousDirectory, currentDirectory);
 
-    if (chdir(args[1]) != 0)
+    if (chdir(target) != 0)
         perror("cd");
 }
 
@@ -303,25 +328,31 @@ void executeLs(char* args[], int argc)
 
     for (int i = 0; i < pathCount; i++)
     {
+        char resolvedPath[PATH_MAX];
+        const char* target = paths[i];
+
+        if (expandHomePath(paths[i], getenv("HOME"), resolvedPath, sizeof(resolvedPath)))
+            target = resolvedPath;
+
         if (pathCount > 1)
-            printf("%s:\n", paths[i]);
+            printf("%s:\n", target);
 
         struct stat info;
 
-        if (stat(paths[i], &info) != 0)
+        if (stat(target, &info) != 0)
         {
             perror("ls");
             continue;
         }
 
         if (S_ISDIR(info.st_mode))
-            listDirectory(paths[i], showHidden, longFormat);
+            listDirectory(target, showHidden, longFormat);
         else
         {
             if (longFormat)
-                printLongEntry(".", paths[i]);
+                printLongEntry(".", target);
             else
-                printf("%s\n", paths[i]);
+                printf("%s\n", target);
         }
 
         if (i != pathCount - 1)
