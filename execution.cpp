@@ -67,7 +67,11 @@ void executeCommand(char* command, const char* homeDirectory)
         executePwd();
 
         if (hasRedirection)
+        {
+            fflush(stdout);
+            fflush(stderr);
             restoreStandardDescriptors();
+        }
 
         return;
     }
@@ -82,7 +86,11 @@ void executeCommand(char* command, const char* homeDirectory)
         executeEcho(args, argc);
 
         if (hasRedirection)
+        {
+            fflush(stdout);
+            fflush(stderr);
             restoreStandardDescriptors();
+        }
 
         return;
     }
@@ -103,7 +111,11 @@ void executeCommand(char* command, const char* homeDirectory)
         executeLs(args, argc);
 
         if (hasRedirection)
+        {
+            fflush(stdout);
+            fflush(stderr);
             restoreStandardDescriptors();
+        }
 
         return;
     }
@@ -118,7 +130,11 @@ void executeCommand(char* command, const char* homeDirectory)
         executePinfo(args, argc);
 
         if (hasRedirection)
+        {
+            fflush(stdout);
+            fflush(stderr);
             restoreStandardDescriptors();
+        }
 
         return;
     }
@@ -133,7 +149,11 @@ void executeCommand(char* command, const char* homeDirectory)
         executeSearch(args, argc);
 
         if (hasRedirection)
+        {
+            fflush(stdout);
+            fflush(stderr);
             restoreStandardDescriptors();
+        }
 
         return;
     }
@@ -148,7 +168,11 @@ void executeCommand(char* command, const char* homeDirectory)
         executeHistory(args, argc);
 
         if (hasRedirection)
+        {
+            fflush(stdout);
+            fflush(stderr);
             restoreStandardDescriptors();
+        }
 
         return;
     }
