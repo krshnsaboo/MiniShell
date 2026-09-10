@@ -11,9 +11,7 @@ bool hasPipe(char* command)
     return strchr(command, '|') != nullptr;
 }
 
-bool background = false;
-
-void executePipeline(char* command, const char* /*homeDirectory*/)
+void executePipeline(char* command, const char* homeDirectory)
 {
     char* commands[100];
     int commandCount = 0;
@@ -26,13 +24,16 @@ void executePipeline(char* command, const char* /*homeDirectory*/)
         token = strtok(nullptr, "|");
     }
 
+    if (commandCount == 0)
+        return;
+
     bool background = false;
 
     char* lastCommand = commands[commandCount - 1];
 
     int length = strlen(lastCommand);
 
-    while(length > 0 && (lastCommand[length - 1] == ' ' || lastCommand[length - 1] == '\t'))
+    while (length > 0 && (lastCommand[length - 1] == ' ' || lastCommand[length - 1] == '\t'))
     {
         lastCommand[length - 1] = '\0';
         length--;
@@ -43,9 +44,6 @@ void executePipeline(char* command, const char* /*homeDirectory*/)
         background = true;
         lastCommand[length - 1] = '\0';
     }
-
-    if (commandCount == 0)
-        return;
 
     int pipefds[2 * (commandCount - 1)];
 
@@ -72,7 +70,7 @@ void executePipeline(char* command, const char* /*homeDirectory*/)
 
         if (pids[i] == 0)
         {
-            if(i==0)
+            if (i == 0)
             {
                 setpgid(0, 0);
             }
@@ -101,15 +99,53 @@ void executePipeline(char* command, const char* /*homeDirectory*/)
             if (argc == 0)
                 _exit(0);
 
-            handleRedirection(args, argc);
+            if (!handleRedirection(args, argc))
+                _exit(1);
+
+            if (strcmp(args[0], "pwd") == 0)
+            {
+                executePwd();
+                _exit(0);
+            }
+            else if (strcmp(args[0], "echo") == 0)
+            {
+                executeEcho(args, argc);
+                _exit(0);
+            }
+            else if (strcmp(args[0], "cd") == 0)
+            {
+                executeCd(args, argc, homeDirectory);
+                _exit(0);
+            }
+            else if (strcmp(args[0], "ls") == 0)
+            {
+                executeLs(args, argc, homeDirectory);
+                _exit(0);
+            }
+            else if (strcmp(args[0], "pinfo") == 0)
+            {
+                executePinfo(args, argc);
+                _exit(0);
+            }
+            else if (strcmp(args[0], "search") == 0)
+            {
+                executeSearch(args, argc);
+                _exit(0);
+            }
+            else if (strcmp(args[0], "history") == 0)
+            {
+                executeHistory(args, argc);
+                _exit(0);
+            }
 
             execvp(args[0], args);
 
             perror("execvp");
             _exit(1);
         }
-        else {
-            if(i==0)
+        else
+        {
+            if (i == 0)
             {
                 setpgid(pids[i], pids[i]);
             }

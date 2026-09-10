@@ -1,4 +1,23 @@
+# Binaries and build output
 shell
 *.o
+*.out
+
+# Shell history
 .shell_history
+
+# Editor and IDE configurations
 .vscode/
+.idea/
+
+# Assignment materials and test directories
+requirements.md
+students_folder/
+disposable_students_folder/
+
+# Temporary test outputs
+check_output.txt
+lines_sorted.txt
+out.txt
+process_info.txt
+*.log

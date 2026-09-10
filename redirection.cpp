@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-void handleRedirection(char* args[], int& argc)
+bool handleRedirection(char* args[], int& argc)
 {
     for (int i = 0; i < argc; i++)
     {
@@ -14,7 +14,7 @@ void handleRedirection(char* args[], int& argc)
             if (i + 1 >= argc)
             {
                 printf("Invalid redirection\n");
-                return;
+                return false;
             }
 
             int fd = open(args[i + 1], O_RDONLY);
@@ -22,7 +22,7 @@ void handleRedirection(char* args[], int& argc)
             if (fd < 0)
             {
                 perror("open");
-                return;
+                return false;
             }
 
             dup2(fd, STDIN_FILENO);
@@ -39,7 +39,7 @@ void handleRedirection(char* args[], int& argc)
             if (i + 1 >= argc)
             {
                 printf("Invalid redirection\n");
-                return;
+                return false;
             }
 
             int fd = open(args[i + 1],
@@ -49,7 +49,7 @@ void handleRedirection(char* args[], int& argc)
             if (fd < 0)
             {
                 perror("open");
-                return;
+                return false;
             }
 
             dup2(fd, STDOUT_FILENO);
@@ -66,7 +66,7 @@ void handleRedirection(char* args[], int& argc)
             if (i + 1 >= argc)
             {
                 printf("Invalid redirection\n");
-                return;
+                return false;
             }
 
             int fd = open(args[i + 1],
@@ -76,7 +76,7 @@ void handleRedirection(char* args[], int& argc)
             if (fd < 0)
             {
                 perror("open");
-                return;
+                return false;
             }
 
             dup2(fd, STDOUT_FILENO);
@@ -91,6 +91,7 @@ void handleRedirection(char* args[], int& argc)
     }
 
     args[argc] = nullptr;
+    return true;
 }
 
 void saveStandardDescriptors()

@@ -1,4 +1,5 @@
 #include "shell.h"
+
 #include <iostream>
 #include <pwd.h>
 #include <sys/stat.h>
@@ -15,6 +16,9 @@ static bool expandHomePath(const char* input,
                           char* output,
                           size_t outputSize)
 {
+    if (homeDirectory == nullptr)
+        return false;
+
     if (strcmp(input, "~") == 0)
     {
         snprintf(output, outputSize, "%s", homeDirectory);
@@ -233,7 +237,10 @@ void printLongEntry(const char* directory, const char* name)
 {
     char path[PATH_MAX];
 
-    snprintf(path, sizeof(path), "%s/%s", directory, name);
+    if (directory != nullptr && directory[0] != '\0')
+        snprintf(path, sizeof(path), "%s/%s", directory, name);
+    else
+        snprintf(path, sizeof(path), "%s", name);
 
     struct stat fileInfo;
 
@@ -290,7 +297,7 @@ void listDirectory(const char* directory, bool showHidden, bool longFormat)
     closedir(dir);
 }
 
-void executeLs(char* args[], int argc)
+void executeLs(char* args[], int argc, const char* homeDirectory)
 {
     bool showHidden = false;
     bool longFormat = false;
@@ -331,7 +338,7 @@ void executeLs(char* args[], int argc)
         char resolvedPath[PATH_MAX];
         const char* target = paths[i];
 
-        if (expandHomePath(paths[i], getenv("HOME"), resolvedPath, sizeof(resolvedPath)))
+        if (expandHomePath(paths[i], homeDirectory, resolvedPath, sizeof(resolvedPath)))
             target = resolvedPath;
 
         if (pathCount > 1)
@@ -350,7 +357,7 @@ void executeLs(char* args[], int argc)
         else
         {
             if (longFormat)
-                printLongEntry(".", target);
+                printLongEntry("", target);
             else
                 printf("%s\n", target);
         }

@@ -100,79 +100,94 @@ void autocomplete(char* buffer,
 
     if (commandMode)
     {
-        char* path = getenv("PATH");
+        const char* builtins[] = {
+            "cd", "echo", "pwd", "ls", "pinfo", "search", "history", "exit"
+        };
+        int builtinCount = 8;
 
-        if (path == nullptr)
-            return;
-
-        char pathCopy[4096];
-
-        strncpy(pathCopy,
-                path,
-                sizeof(pathCopy) - 1);
-
-        pathCopy[sizeof(pathCopy) - 1] = '\0';
-
-        char* directory = strtok(pathCopy, ":");
-
-        while (directory != nullptr &&
-               matchCount < 100)
+        for (int i = 0; i < builtinCount; i++)
         {
-            DIR* dir = opendir(directory);
-
-            if (dir != nullptr)
+            if (strncmp(builtins[i], prefix, strlen(prefix)) == 0)
             {
-                struct dirent* entry;
+                strcpy(matches[matchCount++], builtins[i]);
+            }
+        }
 
-                while ((entry = readdir(dir)) != nullptr &&
+        if (matchCount == 0 || strlen(prefix) == 1)
+        {
+            char* path = getenv("PATH");
+
+            if (path != nullptr)
+            {
+                char pathCopy[4096];
+
+                strncpy(pathCopy,
+                        path,
+                        sizeof(pathCopy) - 1);
+
+                pathCopy[sizeof(pathCopy) - 1] = '\0';
+
+                char* directory = strtok(pathCopy, ":");
+
+                while (directory != nullptr &&
                        matchCount < 100)
                 {
-                    if (strncmp(entry->d_name,
-                                prefix,
-                                strlen(prefix)) != 0)
+                    DIR* dir = opendir(directory);
+
+                    if (dir != nullptr)
                     {
-                        continue;
-                    }
+                        struct dirent* entry;
 
-                    char fullPath[PATH_MAX];
-
-                    snprintf(fullPath,
-                             sizeof(fullPath),
-                             "%s/%s",
-                             directory,
-                             entry->d_name);
-
-                    if (access(fullPath, X_OK) != 0)
-                        continue;
-
-                    bool duplicate = false;
-
-                    for (int i = 0; i < matchCount; i++)
-                    {
-                        if (strcmp(matches[i],
-                                   entry->d_name) == 0)
+                        while ((entry = readdir(dir)) != nullptr &&
+                               matchCount < 100)
                         {
-                            duplicate = true;
-                            break;
+                            if (strncmp(entry->d_name,
+                                        prefix,
+                                        strlen(prefix)) != 0)
+                            {
+                                continue;
+                            }
+
+                            char fullPath[PATH_MAX];
+
+                            snprintf(fullPath,
+                                     sizeof(fullPath),
+                                     "%s/%s",
+                                     directory,
+                                     entry->d_name);
+
+                            if (access(fullPath, X_OK) != 0)
+                                continue;
+
+                            bool duplicate = false;
+
+                            for (int i = 0; i < matchCount; i++)
+                            {
+                                if (strcmp(matches[i],
+                                           entry->d_name) == 0)
+                                {
+                                    duplicate = true;
+                                    break;
+                                }
+                            }
+
+                            if (!duplicate)
+                            {
+                                strcpy(matches[matchCount],
+                                       entry->d_name);
+
+                                matchCount++;
+                            }
                         }
+
+                        closedir(dir);
                     }
 
-                    if (!duplicate)
-                    {
-                        strcpy(matches[matchCount],
-                               entry->d_name);
-
-                        matchCount++;
-                    }
+                    directory = strtok(nullptr, ":");
                 }
-
-                closedir(dir);
             }
-
-            directory = strtok(nullptr, ":");
         }
     }
-
     else
     {
         DIR* dir = opendir(".");
@@ -207,6 +222,11 @@ void autocomplete(char* buffer,
         buffer[start] = '\0';
 
         strcat(buffer, matches[0]);
+
+        if (commandMode)
+        {
+            strcat(buffer, " ");
+        }
 
         length = strlen(buffer);
 

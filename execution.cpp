@@ -60,9 +60,14 @@ void executeCommand(char* command, const char* homeDirectory)
     if (strcmp(args[0], "pwd") == 0)
     {
         if (hasRedirection)
+        {
             saveStandardDescriptors();
-
-        handleRedirection(args, argc);
+            if (!handleRedirection(args, argc))
+            {
+                restoreStandardDescriptors();
+                return;
+            }
+        }
 
         executePwd();
 
@@ -79,9 +84,14 @@ void executeCommand(char* command, const char* homeDirectory)
     if (strcmp(args[0], "echo") == 0)
     {
         if (hasRedirection)
+        {
             saveStandardDescriptors();
-
-        handleRedirection(args, argc);
+            if (!handleRedirection(args, argc))
+            {
+                restoreStandardDescriptors();
+                return;
+            }
+        }
 
         executeEcho(args, argc);
 
@@ -104,11 +114,16 @@ void executeCommand(char* command, const char* homeDirectory)
     if (strcmp(args[0], "ls") == 0)
     {
         if (hasRedirection)
+        {
             saveStandardDescriptors();
+            if (!handleRedirection(args, argc))
+            {
+                restoreStandardDescriptors();
+                return;
+            }
+        }
 
-        handleRedirection(args, argc);
-
-        executeLs(args, argc);
+        executeLs(args, argc, homeDirectory);
 
         if (hasRedirection)
         {
@@ -123,9 +138,14 @@ void executeCommand(char* command, const char* homeDirectory)
     if (strcmp(args[0], "pinfo") == 0)
     {
         if (hasRedirection)
+        {
             saveStandardDescriptors();
-
-        handleRedirection(args, argc);
+            if (!handleRedirection(args, argc))
+            {
+                restoreStandardDescriptors();
+                return;
+            }
+        }
 
         executePinfo(args, argc);
 
@@ -142,9 +162,14 @@ void executeCommand(char* command, const char* homeDirectory)
     if (strcmp(args[0], "search") == 0)
     {
         if (hasRedirection)
+        {
             saveStandardDescriptors();
-
-        handleRedirection(args, argc);
+            if (!handleRedirection(args, argc))
+            {
+                restoreStandardDescriptors();
+                return;
+            }
+        }
 
         executeSearch(args, argc);
 
@@ -161,9 +186,14 @@ void executeCommand(char* command, const char* homeDirectory)
     if (strcmp(args[0], "history") == 0)
     {
         if (hasRedirection)
+        {
             saveStandardDescriptors();
-
-        handleRedirection(args, argc);
+            if (!handleRedirection(args, argc))
+            {
+                restoreStandardDescriptors();
+                return;
+            }
+        }
 
         executeHistory(args, argc);
 
@@ -190,7 +220,10 @@ void executeCommand(char* command, const char* homeDirectory)
         setpgid(0, 0);
         if (hasRedirection)
         {
-            handleRedirection(args, argc);
+            if (!handleRedirection(args, argc))
+            {
+                _exit(1);
+            }
         }
 
         execvp(args[0], args);
